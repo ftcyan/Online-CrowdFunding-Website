@@ -12,10 +12,7 @@ require 'function.php';
 
 $loginuser = $_SESSION['loginuser'];
 
-
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,9 +22,7 @@ $loginuser = $_SESSION['loginuser'];
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-
-    <title>Spring Board Funding</title>
-
+    <title>SpringBoard Funding</title>
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -37,12 +32,7 @@ $loginuser = $_SESSION['loginuser'];
 
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
-
-
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,700" rel="stylesheet" type="text/css">
 
 
     <style>
@@ -53,12 +43,6 @@ $loginuser = $_SESSION['loginuser'];
 
         .navbar-brand{
             font-size: 1.8em;
-        }
-
-
-        #topRow h1 {
-            font-size: 300%;
-
         }
 
         .center{
@@ -78,13 +62,14 @@ $loginuser = $_SESSION['loginuser'];
             margin-bottom: 30px;
         }
 
-        .tagcontainer{
-            height: 350px;
-            width: 1200px;
-            background:url("images/hometagbackground.jpg") center;
-            color: white;
+        .user_icon{
+          margin: 0 5px;
+          width: 20px;
+          height: 20px;
+          display: inline;
+          padding: 0;
+          border: 1px solid rgba(0,0,0,0);
         }
-
     </style>
 
 </head>
@@ -102,7 +87,7 @@ $loginuser = $_SESSION['loginuser'];
                 <span class="icon-bar"></span>
 
             </button>
-            <a class="navbar-brand">Spring Board</a>
+            <a class="navbar-brand" href="homepage.php">SpringBoard</a>
 
         </div>
 
@@ -114,63 +99,56 @@ $loginuser = $_SESSION['loginuser'];
                 <li><a href ="fundrequest.php">Start a project</a></li>
             </ul>
 
-            <?php
+                <?php
 
-            if(isset($loginuser)){
-
-                //echo "welcome $loginuser ";
-
-                //echo " <button type=\"button\" class =\"btn btn-danger\" onclick=\"window.location.href='logout.php'\">Bye Bitch</button>";
-
-                echo"
-
-
-            
-            
-            <div class=\"navbar-text navbar-right dropdown\">
-                    <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">
-                   $loginuser<span class=\"caret\" ></span></a>
-                    <ul class=\"dropdown-menu\">
-                      <li><a href = \"profile.php?userid=$loginuser\"> My Profile </a></li>
-                      <li><a href = \"editProfile.php\"> Settings</a></li>
-                      <li><a href = \"logout.php\"> Log Out </a></li>
-                  </ul>
-                </div> ";
-
-
-
-            }else{
-
-
+                if (isset($loginuser)) {
+                  $query0 = $conn->prepare("SELECT Avatar FROM UserProfiles WHERE UID = ?");
+                  $query0->bind_param("s", $loginuser);
+                  $query0->execute();
+                  $query0->bind_result($icon);
+                  $query0->fetch();
+                  $query0->close();
                 ?>
 
+                <ul class="navbar-text navbar-right dropdown">
+                  <!-- User icon -->
+                  <?php 
+                      if ($icon != null){
+                          echo '<img src="' . $icon . '" class = "thumbnail user_icon" >';
+                      }
+                  ?>
+                  <!-- Drop Down -->
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $loginuser ?> <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="timeline.php">My Timeline</a></li>
+                    <li><a href="profile.php?userid=<?php echo $loginuser; ?>">My Profile</a></li>
+                    <li><a href="editProfile.php">Settings</a></li>
+                    <li><a href="logout.php">Log Out</a></li>
+                  </ul>
+
+                </ul>
+            <?php
+                } else {
+            ?>
                 <form class="navbar-form navbar-right" method="POST" action="loginCheck.php">
 
-                    <div class="form-group">
+                <div class="form-group">
 
-                        <input type="text" class="form-control" placeholder="Username" name="loginname">
+                <input type="text" class="form-control" placeholder="Username" name="loginname">
+                <input type="password" class="form-control" placeholder="*****" name="password">
+                <input type="submit" class="btn btn-success"  value="Log In">
+                </div>
 
-                        <input type="password" class="form-control" placeholder="*****" name="password">
-
-                        <input type="submit" class="btn btn-success"  value="Log In">
-
-                    </div>
-
-                    <button type="button" class ="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up</button>
+                <button type="button" class ="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up</button>
 
                 </form>
 
-
-
-                <?php
-            }
+            <?php
+                }
             ?>
-
-
-
+            </div>
         </div>
     </div>
-</div>
 
 <!-- Header -->
 <header id="top" class="searchheader">
@@ -190,7 +168,7 @@ $loginuser = $_SESSION['loginuser'];
 
                         <div class="form-group">
                             <div class="input-group">
-                                <input class="form-control" type="text" name="searchkeyword" placeholder="Music, movie, fashion..." required/>
+                                <input class="form-control" type="text" name="searchkeyword" placeholder="Music, movie, fashion..."/>
                                 <span class="input-group-btn">
                             <button class="btn btn-success" type="submit" value="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                                     <span style="margin-left:10px;"></span></button>
@@ -199,10 +177,58 @@ $loginuser = $_SESSION['loginuser'];
                             </div>
                             <br/>
                             <h3>Search what you want</h3>
+                            <br/>
                         </div>
                     </div>
 
                 </form>
+
+                <?php
+                if(($_COOKIE['searchuser']!=null)&&($loginuser==$_COOKIE['searchuser'])){
+
+                    $searchhistory = $_COOKIE['keyword'];
+
+                    echo "Your Last Searched History: ";
+
+                    echo "<h4><a href=\"search.php?searchkeyword=$searchhistory\">$searchhistory</a></h4>";
+
+                }else{
+                    echo "<h4>No Searched History</h4>";
+                }
+
+
+                echo "<br>";
+
+
+                if(($_COOKIE['taguser']!=null)&&($loginuser==$_COOKIE['taguser'])){
+
+                    $taghistory = $_COOKIE['clctag'];
+
+                    echo "Your Last Clicked Tag: ";
+
+                    echo "<h4><a href=\"tag.php?clicktag=$taghistory\">$taghistory</a></h4>";
+
+                }else{
+                    echo "<h4>No Tag Clicked Before</h4>";
+                }
+
+
+                echo "<br>";
+
+
+                if(($_COOKIE['visituser']!=null)&&($loginuser==$_COOKIE['visituser'])){
+
+                    $projecthistory = $_COOKIE['visitproj'];
+
+                    echo "Your Last Visited Project: ";
+
+                    echo "<h4><a href=\"project.php?projectname=$projecthistory\">$projecthistory</a></h4>";
+
+                }else{
+                    echo "<h4>No Project Visited Recently</h4>";
+                }
+
+                ?>
                 <!-- End of Search Form -->
 
             </div>
@@ -274,18 +300,15 @@ $loginuser = $_SESSION['loginuser'];
 
 
 
-
-
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
-
-<script>window.jQuery || document.write('<script src="js/jquery-1.11.0.min.js"><\/script>')</script>
+    <script src="js/jquery.js"></script>    
 
     <script>
 
-        $(".contentContainer").css("min-height",$(window).height());
+      $(".contentContainer").css("min-height",$(window).height());
 
         // Scrolls to the selected menu item on the page
         $(function() {
@@ -293,13 +316,13 @@ $loginuser = $_SESSION['loginuser'];
                 if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') || location.hostname == this.hostname) {
                     var target = $(this.hash);
                     target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
-                    if (target.length) {
+                      if (target.length) {
                         $('html,body').animate({
-                            scrollTop: target.offset().top
-                        }, 1000);
-                        return false;
-                    }
-                }
+                          scrollTop: target.offset().top
+                          }, 1000);
+                          return false;
+                        }
+                  }
             });
         });
         //#to-top button appears after scrolling
@@ -310,24 +333,23 @@ $loginuser = $_SESSION['loginuser'];
                     fixed = true;
                     // $('#to-top').css({position:'fixed', display:'block'});
                     $('#to-top').show("slow", function() {
-                        $('#to-top').css({
-                            position: 'fixed',
-                            display: 'block'
-                        });
+                      $('#to-top').css({
+                          position: 'fixed',
+                          display: 'block'
+                      });
                     });
                 }
             } else {
-                if (fixed) {
-                    fixed = false;
-                    $('#to-top').hide("slow", function() {
-                        $('#to-top').css({
-                            display: 'none'
-                        });
+               if (fixed) {
+                  fixed = false;
+                  $('#to-top').hide("slow", function() {
+                    $('#to-top').css({
+                      display: 'none'
                     });
-                }
+                  });
+              }
             }
         });
-
 
     </script>
 

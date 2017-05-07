@@ -9,7 +9,32 @@ session_start();
 require 'connection.php';
 require 'function.php';
 
-$loginuser = $_SESSION['loginuser'];
+    $loginuser = $_SESSION['loginuser'];
+    if (!isset($_GET['projectname'])) {
+        echo "<script>location.href='homepage.php'</script>";
+    }
+    //Set Cookies
+    setcookie("visituser",$loginuser,time()+60*60*24*30);
+    setcookie("visitproj",$_GET["projectname"],time()+60*60*24*30);
+
+    $projectname = $_GET["projectname"];
+    $getproj = $conn->prepare("SELECT ProjID FROM Projects WHERE ProjName = '$projectname'");
+    $getproj->execute();
+    $getproj->bind_result($pid);
+    $getproj->fetch();
+    $getproj->close();
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (isset($_POST['like'])) {
+            $subquery11 = $conn->prepare("INSERT INTO Likes (UID, ProjID) VALUES ('$loginuser', '$pid')");
+            $subquery11->execute();
+            $subquery11->close();
+        } elseif (isset($_POST['unlike'])) {
+            $subquery12 = $conn->prepare("DELETE FROM Likes WHERE UID = '$loginuser' AND ProjID = '$pid'");
+            $subquery12->execute();
+            $subquery12->close();
+        }
+    }
+
 ?>
 
 
@@ -33,7 +58,6 @@ $loginuser = $_SESSION['loginuser'];
     <script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
     <script src="js/star-rating.min.js" type="text/javascript"></script>
     <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-
 
 
 
@@ -86,10 +110,6 @@ $loginuser = $_SESSION['loginuser'];
             color: #FF0000;
         }
 
-
-    </style>
-
-    <style type="text/css">
         .demo{padding: 1em 0;}
         a:hover,a:focus{
             outline: none;
@@ -170,6 +190,23 @@ $loginuser = $_SESSION['loginuser'];
                 border: none;
             }
         }
+        .bggly{
+            font-size: 25px;
+        }
+        .btn-hide{
+            border: 0;
+            padding: 0;
+            outline: 0;
+            background: transparent;
+        }
+        .user_icon{
+            margin: 0 5px;
+            width: 20px;
+            height: 20px;
+            display: inline;
+            padding: 0;
+            border: 1px solid rgba(0,0,0,0);
+        }
     </style>
 
 </head>
@@ -187,7 +224,7 @@ $loginuser = $_SESSION['loginuser'];
                 <span class="icon-bar"></span>
 
             </button>
-            <a class="navbar-brand">Spring Board</a>
+            <a class="navbar-brand" href="homepage.php">SpringBoard</a>
 
         </div>
 
@@ -200,69 +237,54 @@ $loginuser = $_SESSION['loginuser'];
             </ul>
 
             <?php
-
-            if(isset($loginuser)){
-
-                //echo "welcome $loginuser ";
-
-                //echo " <button type=\"button\" class =\"btn btn-danger\" onclick=\"window.location.href='logout.php'\">Bye Bitch</button>";
-
-                echo"
-
-            
-            <div class=\"navbar-text navbar-right dropdown\">
-                    <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">
-                   $loginuser<span class=\"caret\" ></span></a>
-                    <ul class=\"dropdown-menu\">
-                      <li><a href = \"profile.php?userid=$loginuser\"> My Profile </a></li>
-                      <li><a href = \"editProfile.php\"> Settings</a></li>
-                      <li><a href = \"logout.php\"> Log Out </a></li>
-                  </ul>
-                </div> ";
-
-
-
-            }else{
-
-
+                if(isset($loginuser)) {
+                    $query0 = $conn->prepare("SELECT Avatar FROM UserProfiles WHERE UID = ?");
+                    $query0->bind_param("s", $loginuser);
+                    $query0->execute();
+                    $query0->bind_result($icon);
+                    $query0->fetch();
+                    $query0->close();
                 ?>
 
+              <ul class="navbar-text navbar-right dropdown">
+                  <!-- User icon -->
+                  <?php 
+                      if ($icon != null){
+                          echo '<img src="' . $icon . '" class = "thumbnail user_icon" >';
+                      }
+                  ?>
+                  <!-- Drop Down -->
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $loginuser ?> <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                      <li><a href="timeline.php">My Timeline</a></li>
+                      <li><a href="profile.php?userid=<?php echo $loginuser; ?>">My Profile</a></li>
+                      <li><a href="editProfile.php">Settings</a></li>
+                      <li><a href="logout.php">Log Out</a></li>
+                  </ul>
+
+              </ul>
+            <?php
+                } else {
+            ?>
                 <form class="navbar-form navbar-right" method="POST" action="loginCheck.php">
 
-                    <div class="form-group">
+                <div class="form-group">
 
-                        <input type="text" class="form-control" placeholder="Username" name="loginname">
+                    <input type="text" class="form-control" placeholder="Username" name="loginname">
+                    <input type="password" class="form-control" placeholder="*****" name="password">
+                    <input type="submit" class="btn btn-success"  value="Log In">
+                </div>
 
-                        <input type="password" class="form-control" placeholder="*****" name="password">
-
-                        <input type="submit" class="btn btn-success"  value="Log In">
-
-                    </div>
-
-                    <button type="button" class ="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up</button>
+                <button type="button" class ="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up</button>
 
                 </form>
 
-
-
-                <?php
-            }
+            <?php
+                }
             ?>
-
-
-
         </div>
     </div>
 </div>
-
-
-
-
-
-
-
-
-
 
 
 <div class="container contentContainer" id="topContainer">
@@ -273,9 +295,6 @@ $loginuser = $_SESSION['loginuser'];
         <br/>
 
         <?php
-
-        $projectname = $_GET["projectname"];
-
 
         $query0 = $conn->prepare("SELECT * FROM Projects WHERE ProjName='$projectname'");
         $query0 -> execute();
@@ -298,12 +317,27 @@ $loginuser = $_SESSION['loginuser'];
         $query1->close();
 
 
-        ?>
-
-
-        <div><span class="glyphicon glyphicon-thumbs-up"></span></div>
-
-
+        if (isset($loginuser)) {
+            $query11 = $conn->prepare("SELECT * FROM Likes WHERE UID = '$loginuser' AND ProjID = '$projid'");
+            $query11->execute();
+            if ($query11->fetch()) {
+                //undo like, show heart
+                ?>
+                <form method="post" action="project.php?projectname=<?php echo $projectname;?>">
+                <input type="hidden" name="unlike">
+                <button type="submit" class="btn-hide"><span class="glyphicon glyphicon-heart bggly"></span></button>
+                </form>
+            <?php } else { 
+                //like, show empty heart
+                ?>
+                <form method="post" action="project.php?projectname=<?php echo $projectname;?>">
+                <input type="hidden" name="like">
+                <button type="submit" class="btn-hide"><span class="glyphicon glyphicon-heart-empty bggly"></span></button>
+                </form>
+            <?php
+            }
+            $query11->close();
+        } ?>
     </div>
 
 </div>
@@ -325,7 +359,8 @@ $loginuser = $_SESSION['loginuser'];
 
             <h5><span class="glyphicon glyphicon-envelope"></span> Email: <?php echo $emailaddress;?></h5>
 
-            <h5><span class="glyphicon glyphicon-cutlery"></span> Interests: <?php echo $interests;?></h5><hr>
+            <h5><span class="glyphicon glyphicon-cutlery"></span> Interests: <?php echo $interests;?></h5>
+            <hr>
 
             <h5>Project Post Time: <?php echo $posttime;?></h5>
 
@@ -341,7 +376,9 @@ $loginuser = $_SESSION['loginuser'];
 
 
         <div class="center">
-        <h4>Project Status:</h4><h3 class="projstatus"><?php echo $status;?></h3><hr>
+        <h4>Project Status:</h4><h3 class="projstatus"><?php echo $status;?></h3>
+        <h4>Minimum Fund Needed: <span style="color: #5CB85C">$<?php echo $minfundvalue;?></span></h4>
+        <hr>
         </div>
 
         <ul class = "list-group">
@@ -366,10 +403,6 @@ $loginuser = $_SESSION['loginuser'];
 
     <hr>
 
-
-
-
-
     <div class="center">
 
         <?php
@@ -386,27 +419,54 @@ $loginuser = $_SESSION['loginuser'];
             echo "<td><a href ='tag.php?clicktag=$tag'>$tag</a>  </td>\n";
         }
 
-
-
         $query6->close();
 
         ?>
 
-
-        <hr>
-
-
-        <br/>
-
-    </div>
+    <hr>
 
 
-    <div class="center">
-
-        <a class="btn btn-success btn-lg" data-toggle ="modal" data-target="#pledgeModal" role="button">SPONSOR IT!</a>
-        <br/><br/>
+    <br/>
 
     </div>
+
+
+    <?php
+
+    if($status == 'Funding') {
+        $query7 = $conn->prepare("SELECT UID FROM Pledges WHERE ProjID='$projid' AND UID = '$loginuser'");
+        $query7->execute();
+        $query7->bind_result($sponsors);
+
+        if ($query7->fetch()) {
+            echo "<h3><div style='text-align: center; color: #5CB85C'>You have already sponsored this project.</div></h3> <br/><br/>";
+
+        } else {
+            ?>
+            <div class="center">
+
+                <a class="btn btn-success btn-lg" data-toggle="modal" data-target="#pledgeModal" role="button">SPONSOR
+                    IT!</a>
+                <br/><br/>
+
+            </div>
+            <?php
+        }
+        $query7->close();
+
+    }else if($status == 'Ongoing'){
+        echo "<h3><div style='text-align: center; color: #5CB85C'>The funding period is over and $ownerid is working on this project :)</div></h3> <br/><br/>";
+
+    }else if($status == 'Completed'){
+        echo "<h3><div style='text-align: center; color: #5CB85C'>Thanks to your supports the project is completed now!</div></h3> <br/><br/>";
+
+    }else if($status == 'Failed'){
+
+        echo "<h3><div style='text-align: center; color: #5CB85C'>$ownerid didn't recieve enough fund...<br>Your comment will be a great comfort :)</div></h3> <br/><br/>";
+
+    }
+
+    ?>
 
     <div class="modal" id="pledgeModal">
 
@@ -423,18 +483,15 @@ $loginuser = $_SESSION['loginuser'];
                 </div>
 
 
-                <form role ="form" class="form-inline" action="pledgepage.php" method="post">
+                <form name="sponsorform" role ="form" class="form-inline" method="post">
                 <div class ="modal-body">
 
                     <div class="row">
 
                         <div class="col-md-12 marginTop">
                             <p class="form-group marginmiddle">
-
                                 <span class="glyphicon glyphicon-usd"></span>
-                                    <input class="form-control" type="number" placeholder="Amount" step="50" min="500"/>
-
-
+                                <input name="pledgeamount" class="form-control" type="number" placeholder="Amount" step="50" min="500"/>
                         </div>
                     </div>
 
@@ -442,35 +499,32 @@ $loginuser = $_SESSION['loginuser'];
 
                 <div class ="modal-footer">
 
-                    <button class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button class="btn btn-success">Sponsor</button>
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Sponsor</button>
                 </div>
                 </form>
+                <?php
 
+                if($_POST['pledgeamount']){
+                    $newpledgeuid = $loginuser;
+                    $newpledgeprojid = $projid;
+
+                    $newpledgetime = date('Y-m-d H:i:s');
+                    $newpledgeamount = $_POST['pledgeamount'];
+                    $newpledgecard = $creditcardnumber;
+
+                    $pledgequery = $conn-> prepare("INSERT INTO Pledges (ProjID, UID, PledgeTime, Amount, CreditCardNumber) 
+                        VALUES ('$projid','$loginuser','$newpledgetime','$newpledgeamount','$newpledgecard')");
+                    $pledgequery -> execute();
+                    $pledgequery -> close();
+
+                    echo "<script>location.href='project.php?projectname=$projectname'</script>";
+
+                }
+                ?>
             </div>
         </div>
     </div>
-
-
-
-
-    <?php
-
-
-    $query4 = $conn->prepare("SELECT * FROM Comments WHERE ProjID='$projid' order by CommentTime DESC ");
-    $query4 -> execute();
-    $query4 -> bind_result($commentby, $commentproj, $commentcontent, $commenttime);
-    $query4->fetch();
-    $query4->close();
-
-    $query5 = $conn->prepare("SELECT * FROM Reviews WHERE ProjID='$projid' order by RateTime DESC ");
-    $query5 -> execute();
-    $query5 -> bind_result($rateby, $rateproj, $ratingstar, $ratetime, $reviewcontent);
-    $query5->fetch();
-    $query5->close();
-
-
-    ?>
 
 
 
@@ -486,166 +540,314 @@ $loginuser = $_SESSION['loginuser'];
                             <li role="presentation"><a href="#Section3" aria-controls="messages" role="tab" data-toggle="tab">Reviews</a></li>
 
                         </ul>
-                        <!-- Tab panes -->
-                        <div class="tab-content tabs">
-                            <div role="tabpanel" class="tab-pane fade in active" id="Section1">
+
+                    <!-- Tab panes -->
+                    <div class="tab-content tabs">
+                        <!--Start- Updates-->
+                        <div role="tabpanel" class="tab-pane fade in active" id="Section1">
+                            <h4>Updates:</h4><br/>
+
+                        <?php
+
+                            $query2 = $conn->prepare("SELECT MID, MDescription, MPath, UpdateTime
+                                    FROM StageUpdate natural join Materials
+                                    WHERE ProjID='$projid' order by UpdateTime DESC ");
+                            $query2 ->execute();
+                            $query2 ->bind_result($updateid, $updatedescription, $updatepath, $updatetime);
 
 
+                            while ($query2->fetch()){
+                                echo "<h4>$updateid</h4>
+                                    <h4>$updatetime</h4>
+                                    <h3>$updatedescription</h3><br/>
+                                    <p><a href=\" $updatepath\" class=\"center-block\"><img src=\" $updatepath\" class=\"img-responsive\" /></a></p>";
+
+                                echo "<br/>";
+
+                            }
 
 
+                            if(!$updateid){
+                                echo "The project has no updates yet. <br/>";
+                            }
 
-                                <h4>Updates:</h4><br/>
-
-
-                                <?php
-
-
-                                $query2 = $conn->prepare("SELECT MID, MDescription, MPath, UpdateTime
-                                                                FROM StageUpdate natural join Materials
-                                                                WHERE ProjID='$projid' order by UpdateTime DESC ");
-                                $query2 ->execute();
-                                $query2 ->bind_result($updateid, $updatedescription, $updatepath, $updatetime);
+                            $query2->close();
 
 
+                            if($loginuser == $ownerid){
+
+                                echo "<a href='update.php?projectid=$projid&projectname=$projname'><button class='btn btn-success marginTop'>Update Your Project</button></a>";
+                            }
 
 
-                                while ($query2->fetch()){
+                        ?>
 
 
+                        <hr>
 
 
-                                    echo "<h4>$updateid</h4>
-                                            <h4>$updatetime</h4>
-                                            <h3>$updatedescription</h3><br/>
-                                            <p><a href=\" $updatepath\" class=\"center-block\"><img src=\" $updatepath\" class=\"img-responsive\" /></a></p>";
+                        <h4>Samples:</h4><br/>
 
-                                    echo "<br/>";
+                        <?php
+
+                            $query3 = $conn->prepare("SELECT MID, MDescription, MPath
+                                        FROM Attach natural join Materials
+                                            WHERE ProjID='$projid' ");
+                            $query3 ->execute();
+                            $query3 ->bind_result($sampleid, $sampledescription, $samplepath);
+
+                            while ($query3->fetch()){
+                                echo "<h4>$sampleid</h4>
+                                    <h3>$sampledescription</h3><br/>
+                                    <p><a href=\" $samplepath\" class=\"center-block\"><img src=\" $samplepath\" class=\"img-responsive\" /></a></p>";
+                                echo "<br/>";
+
+                            }
+
+                            if(!$sampleid){
+                                echo "The owner didn't upload samples. ";
+                            }
+                            $query3->close();
+
+
+                        ?>
+
+                        </div><!--End Updates-->
+
+                        <!--Start Comments-->
+                        <div role="tabpanel" class="tab-pane fade" id="Section2">
+
+                        <?php
+
+                            $query4 = $conn->prepare("SELECT * FROM Comments WHERE ProjID='$projid' order by CommentTime DESC ");
+                            $query4 -> execute();
+                            $query4 -> bind_result($commentby, $commentproj, $commentcontent, $commenttime);
+
+                            while ($query4->fetch()){
+
+                                echo "<h3>$commentby</h3>
+                                    <h5>$commenttime</h5>
+                                    <p>$commentcontent</p><br/>";
+                                echo "<br/>";
+
+                            }
+
+                            if(!$commentby){
+                                echo "The project didn't have any comments yet. <br/><br/>";
+                            }
+
+                            $query4 -> close();
+
+                        if (!isset($loginuser)) { ?>
+                            <p style="color: #226837; font-size: 18px; font-weight: 500;">Please Login First to make a comment.</p>
+                        <?php
+                        } else {
+                        ?>
+
+                        <button class="btn btn-success" data-toggle ="modal" data-target="#commentModal">
+                                Make a comment
+                        </button>
+
+                        <?php } ?>
+                        <div class="modal" id="commentModal">
+
+                            <div class ="modal-dialog">
+
+                                <div class ="modal-content">
+
+                                    <div class="modal-header">
+
+                                        <button class="close" data-dismiss="modal">x</button>
+
+                                            <h4 class="modal-title">Comment</h4>
+
+                                    </div>
+
+                                    <form name="commentform" method="post">
+
+                                    <div class ="modal-body">
+
+                                        <div class="row">
+
+                                            <div class="col-md-12 marginTop">
+                                                <p class="form-group marginmiddle">
+
+                                                <textarea name="commentcontent"  class="form-control"  rows="8" placeholder="Tell the owner what you think..."></textarea></p>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class ="modal-footer">
+
+                                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-success">Post comment :)</button>
+                                    </div>
+                                    </form>
+
+
+                            <?php
+                                if($_POST['commentcontent']){
+                                    $newcommentuid = $loginuser;
+                                    $newcommentprojid = $projid;
+                                    $newusercomment = $_POST['commentcontent'];
+                                    $newcommenttime = date('Y-m-d H:i:s');
+
+                                    $commentquery = $conn-> prepare("INSERT INTO Comments (UID, ProjID, UserComment, CommentTime) VALUES ('$newcommentuid', '$newcommentprojid', '$newusercomment', '$newcommenttime')");
+                                    $commentquery -> execute();
+                                    $commentquery ->close();
+
+                                    echo "<script>location.href='project.php?projectname=$projectname'</script>";
 
                                 }
 
-
-                                if(!$updateid){
-                                    echo "The project has no updates yet. <br/>";
-                                }else {
-                                }
+                            ?>
 
 
-                                $query2->close();
-
-
-
-
-                                if($loginuser == $ownerid){
-
-                                    echo "<a href='update.php?projectid=$projid&projectname=$projname'><button class='btn btn-success marginTop'>Update Your Project</button></a>";
-                                }
-
-
-                                ?>
-
-
-                                <hr>
-
-
-                                <h4>Samples:</h4><br/>
-
-                                <?php
-
-
-                                $query3 = $conn->prepare("SELECT MID, MDescription, MPath
-                                                                FROM Attach natural join Materials
-                                                                WHERE ProjID='$projid' ");
-                                $query3 ->execute();
-                                $query3 ->bind_result($sampleid, $sampledescription, $samplepath);
-
-
-
-                                while ($query3->fetch()){
-
-                                    echo "<h4>$sampleid</h4>
-                                            <h3>$sampledescription</h3><br/>
-                                            <p><a href=\" $samplepath\" class=\"center-block\"><img src=\" $samplepath\" class=\"img-responsive\" /></a></p>";
-
-                                    echo "<br/>";
-
-                                    }
-
-                                if(!$sampleid){
-                                    echo "The owner didn't upload samples. ";
-                                }
-
-
-                                $query3->close();
-
-
-
-                                ?>
-
-
-
-
-
+                                </div>
                             </div>
+                        </div>
 
 
-                            <div role="tabpanel" class="tab-pane fade" id="Section2">
-                                <h3><?php echo $commentby; ?>:</h3>
-                                <h5><?php  echo $commenttime; ?></h5>
-                                <h3><?php  echo $commentcontent; ?></h3>
+                    </div><!--End Comments-->
+
+                        <!--Start Reviews-->
+                        <div role="tabpanel" class="tab-pane fade" id="Section3">
+
+                            <?php
+
+                            $query5 = $conn->prepare("SELECT * FROM Reviews WHERE ProjID='$projid' order by RateTime DESC ");
+                            $query5 -> execute();
+                            $query5 -> bind_result($rateby, $rateproj, $ratingstar, $ratetime, $reviewcontent);
+
+                            while ($query5->fetch()){
+
+                                echo "<h3>$rateby</h3>
+                                            <h5>$ratetime</h5>";
+
+                                for ($i=0; $i<$ratingstar; $i++) {
+                                    echo "<span class=\"glyphicon glyphicon-star\" aria-hidden=\"true\"></span>";
+                                }
+
+                                echo "<br/><p>$reviewcontent</p><br/>";
+                                echo "<br/>";
+
+                            }
+
+                            if(!$rateby){
+                                   echo "The project didn't have any reviews yet. <br/>";
+                            }
+
+                            $query5 -> close();
+
+
+
+                            if($status == 'Completed'){
+
+                                $query55 = $conn->prepare("SELECT UID FROM Pledges WHERE ProjID='$projid' AND UID = '$loginuser'");
+                                $query55 -> execute();
+                                $query55 -> bind_result($sponsors);
+
+
+                                if ($query55->fetch()){
+
+                                ?>
 
                                 <br/>
 
-
-
-                                <button class="btn btn-success" data-toggle ="modal" data-target="#commentModal">
-                                    Make a comment
+                                <?php 
+                                if (!isset($loginuser)) { ?>
+                                <p style="color: #226837; font-size: 18px; font-weight: 500;">Please Login First to make a review.</p>
+                                <?php
+                                } else {
+                                ?>
+                                <button class ="btn btn-success" data-toggle ="modal" data-target="#reviewModal">
+                                    Rate this project
                                 </button>
 
+                                <?php
+                                    }
+                                } else {
+                                    echo "Review function only open to sponsors. <br/>";
 
-                                <div class="modal" id="commentModal">
+                                }
+                                $query55 -> close();
 
-                                    <div class ="modal-dialog">
 
-                                        <div class ="modal-content">
+                            }else{
 
-                                            <div class="modal-header">
+                                echo "Review function only open when the project is completed. <br/>";
 
-                                                <button class="close" data-dismiss="modal">x</button>
+                            }
 
-                                                <h4 class="modal-title">Comment</h4>
+                        ?>
 
-                                            </div>
+                            <div class="modal" id="reviewModal">
+
+                                <div class ="modal-dialog">
+
+                                    <div class ="modal-content">
+
+                                        <div class="modal-header">
+
+                                            <button class="close" data-dismiss="modal">x</button>
+
+                                            <h4 class="modal-title">Reviews</h4>
+
+                                        </div>
+
+                                        <form name="rateform" method="post">
 
                                             <div class ="modal-body">
+
+                                                Rate from 0 to 5 stars.
+
+                                                <br/>
+                                                <input name="ratestar" id="input-21e" value="0" type="number" class="rating" min=0 max=5 step=1 data-size="xs">
+                                                <br/>
 
                                                 <div class="row">
 
                                                     <div class="col-md-12 marginTop">
                                                         <p class="form-group marginmiddle">
 
-                                                            <textarea name="commentcontent"  class="form-control"  rows="8" placeholder="Tell the owner what you think..."></textarea>
+                                                            <textarea name="reviewcontent" class="form-control"  rows="8" placeholder="Do u like it?"></textarea>
 
                                                     </div>
                                                 </div>
 
                                             </div>
-                                            <form method="post">
 
                                             <div class ="modal-footer">
 
-                                                <button class="btn btn-default" data-dismiss="modal">Close</button>
-                                                <button type="submit" class="btn btn-success">Post comment :)</button>
+                                                <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success">Submit review :)</button>
                                             </div>
                                             </form>
 
-
-
-
                                             <?php
 
+                                            if($_POST['ratestar']){
+
+                                                //$star = $_POST['ratestar'];
+                                                $newrateuid = $loginuser;
+                                                $newrateprojid = $projid;
+                                                $newratestar = $_POST['ratestar'];
+                                                $newreviewtime = date('Y-m-d H:i:s');
+                                                $newreviewcontent = $_POST['reviewcontent'];
+
+
+                                                $ratequery = $conn-> prepare("INSERT INTO Reviews (UID, ProjID, Rating, RateTime, UserReview) VALUES ('$newrateuid','$newrateprojid','$newratestar','$newreviewtime', '$newreviewcontent')");
+                                                $ratequery -> execute();
+                                                $ratequery -> close();
 
 
 
+                                                echo "<script>location.href='project.php?projectname=$projectname'</script>";
+
+                                            }
                                             ?>
 
 
@@ -654,70 +856,7 @@ $loginuser = $_SESSION['loginuser'];
                                 </div>
 
 
-                            </div>
-
-
-                            <div role="tabpanel" class="tab-pane fade" id="Section3">
-
-                                <h3><?php echo $rateby; ?> - Rated <?php echo $ratingstar; ?> Stars</h3>
-                                <h5><?php  echo $ratetime; ?></h5>
-                                <h3><?php  echo $reviewcontent; ?></h3>
-
-                                <br/>
-
-                                <button class ="btn btn-success" data-toggle ="modal" data-target="#reviewModal">
-                                    Rate this project
-                                </button>
-
-
-
-                                <div class="modal" id="reviewModal">
-
-                                    <div class ="modal-dialog">
-
-                                        <div class ="modal-content">
-
-                                            <div class="modal-header">
-
-                                                <button class="close" data-dismiss="modal">x</button>
-
-                                                <h4 class="modal-title">Reviews</h4>
-
-                                            </div>
-
-                                            <div class ="modal-body">
-
-                                                Rate from 0 to 5 stars.
-
-                                                <br/>
-                                                <input id="input-21e" value="0" type="number" class="rating" min=0 max=5 step=1 data-size="xs">
-                                                <br/>
-
-                                                <div class="row">
-
-                                                    <div class="col-md-12 marginTop">
-                                                        <p class="form-group marginmiddle">
-
-                                                            <textarea class="form-control"  rows="8" placeholder="Do u like it?"></textarea>
-
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                            <div class ="modal-footer">
-
-                                                <button class="btn btn-default" data-dismiss="modal">Close</button>
-                                                <button class="btn btn-success">Submit review :)</button>
-                                            </div>
-
-
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                            </div>
+                            </div><!--End Reviews-->
 
                         </div>
                     </div>
@@ -726,20 +865,7 @@ $loginuser = $_SESSION['loginuser'];
         </div>
     </div>
 
-
-
-
 </div>
-
-
-
-
-
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="js/bootstrap.min.js"></script>
-
 
 <script src="http://cdn.bootcss.com/jquery/1.11.0/jquery.min.js" type="text/javascript"></script>
 <script>window.jQuery || document.write('<script src="js/jquery-1.11.0.min.js"><\/script>')</script>
@@ -747,24 +873,14 @@ $loginuser = $_SESSION['loginuser'];
 
 <script>
 
-
-
     jQuery(document).ready(function () {
 
         $(".rating-kv").rating();
 
     });
 
-
-
-
 </script>
-
-
 
 </body>
 </html>
-
-
-
 

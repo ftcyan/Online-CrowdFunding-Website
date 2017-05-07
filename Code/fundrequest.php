@@ -10,19 +10,28 @@ session_start();
 require 'connection.php';
 require 'function.php';
 
-
 $loginuser = $_SESSION['loginuser'];
 
+//check qualification
+if (!isset($loginuser)) {
+    echo "<script>alert('Please Log in First!')</script>";
+    echo "<script>location.href='homepage.php'</script>";
+} 
+$isqualify = $conn->prepare("SELECT FirstName, LastName, Cellphone, EmailAddress, CreditCardNumber FROM UserProfiles WHERE UID = '$loginuser'");
+$isqualify->execute();
+$isqualify->bind_result($valifirstname, $valilastname, $valiphone, $valiemail, $validcard);
+$isqualify->fetch();
+$isqualify->close();
+if ($valifirstname == "" || $valilastname == "" || $valiphone == "" || $valiemail == "" || $validcard == "") {
+    echo "<script>alert('Please Complete Your Profile!')</script>";
+    echo "<script>location.href='editProfile.php'</script>";
+}
 
-
-
+//processing the form request
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    date_default_timezone_set('America/New_York');
-
-
-    $requestname = $_POST['q1'];
-    $requestdscp = $_POST['q2'];
+    $requestname = test_input($_POST['q1']);
+    $requestdscp = test_input($_POST['q2']);
     $requestminfund = $_POST['q3'];
     $requestmaxfund = $_POST['q4'];
     $requestfundendtime = $_POST['q5'];
@@ -31,34 +40,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
     $requestposttime = date('Y-m-d H:i:s');
-    $requeststatus = "funding";
 
     $requestowner = $loginuser;
 
-    $requestid = "86666";
-
-/*
-    echo $requestname;
-    echo $requestdscp;
-    echo $requestminfund;
-    echo $requestmaxfund;
-    echo $requestfundendtime;
-    echo $requesttargettime;
-    echo $requestposttime;
-    echo $requeststatus;
-
-*/
-
-    $insertquery = $conn->prepare("INSERT INTO Projects(ProjID, ProjName, Description, OwnerID, MinFundValue, MaxFundValue, PostTime, FundingEndtime, StartTime, TargetTime, CompleteTime, LikeCount, SponsorCount, AlreadyFund, Status, AvgRating)
-                          VALUES ('$requestid', '$requestname', '$requestdscp', '$requestowner', '$requestminfund', '$requestmaxfund', '$requestposttime', '$requestfundendtime', null,'$requesttargettime',null, null,null, null, '$requeststatus', null)");
+    $insertquery = $conn->prepare("INSERT INTO Projects(ProjName, Description, OwnerID, MinFundValue, MaxFundValue, PostTime, FundingEndtime, StartTime, TargetTime, CompleteTime,AvgRating)
+                          VALUES ('$requestname', '$requestdscp', '$requestowner', '$requestminfund', '$requestmaxfund', '$requestposttime', '$requestfundendtime', null,'$requesttargettime',null, null)");
 
     $insertquery -> execute();
     $insertquery ->close();
+    //get project id
+    /*$check1 = $conn->prepare("SELECT ProjID FROM Projects ORDER BY ProjID DESC LIMIT 1");
+    $check1->execute();
+    $check1->bind_result($requestid);
+    if ($check1->fetch()){
+        $check1->close();
+        echo "<script>location.href='tagandsample.php?projectid=$requestid'</script>";
+    }
+    $check1->close();*/
 
-   echo "<script>location.href='tagandsample.php?requestid=$requestid'</script>";
-
-}else{
-
+   echo "<script>location.href='tagandsample.php?requestname=$requestname'</script>";
+}
 
 ?>
 
@@ -73,9 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <title>Start a project</title>
 
-    <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-
 
     <link rel="stylesheet" type="text/css" href="css/normalize.css"/>
     <link rel="stylesheet" type="text/css" href="css/demo.css"/>
@@ -84,119 +82,88 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" type="text/css" href="css/cs-skin-boxes.css"/>
 
     <script src="js/modernizr.custom.js"></script>
-
-
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,700" rel="stylesheet" type="text/css">
     <style>
-
-
         .navbar-brand {
             font-size: 1.8em;
-        }
-
-        #topContainer {
-
-        }
-
-        #topRow h1 {
-            font-size: 300%;
-
-        }
-
-        .center {
-            text-align: center;
         }
 
         .form-control {
             display: block;
             width: 50%;
         }
-
-
+        .user_icon{
+            margin: 0 5px;
+            width: 20px;
+            height: 20px;
+            display: inline;
+            padding: 0;
+            border: 1px solid rgba(0,0,0,0);
+        }
     </style>
 
 </head>
 <body>
 
+    <div class="navbar-default navbar-fixed-top">
+        <div class="container">
 
-<div class="navbar-default navbar-fixed-top">
-    <div class="container">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
 
-        <div class="navbar-header">
-            <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
 
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="homepage.php">SpringBoard</a>
 
-            </button>
-            <a class="navbar-brand">Spring Board</a>
+            </div>
 
-        </div>
+            <div class="collapse navbar-collapse">
 
-        <div class="collapse navbar-collapse">
-
-            <ul class="nav navbar-nav">
-                <li><a href="homepage.php">Home</a></li>
-                <li><a href="explore.php">Explore</a></li>
-                <li class="active"><a href="fundrequest.php">Start a project</a></li>
-            </ul>
-
-            <?php
-
-            if (isset($loginuser)) {
-
-                //echo "welcome $loginuser ";
-
-                //echo " <button type=\"button\" class =\"btn btn-danger\" onclick=\"window.location.href='logout.php'\">Bye Bitch</button>";
-
-                echo "
-            
-            <div class=\"navbar-text navbar-right dropdown\">
-                    <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">
-                   $loginuser<span class=\"caret\" ></span></a>
-                    <ul class=\"dropdown-menu\">
-                      <li><a href = \"profile.php?userid=$loginuser\"> My Profile </a></li>
-                      <li><a href = \"editProfile.php\"> Settings</a></li>
-                      <li><a href = \"logout.php\"> Log Out </a></li>
-                  </ul>
-                </div> ";
-
-
-            } else {
-
-
-                ?>
-
-                <form class="navbar-form navbar-right" method="POST" action="loginCheck.php">
-
-                    <div class="form-group">
-
-                        <input type="text" class="form-control" placeholder="Username" name="loginname">
-
-                        <input type="password" class="form-control" placeholder="*****" name="password">
-
-                        <input type="submit" class="btn btn-success" value="Log In">
-
-                    </div>
-
-                    <button type="button" class="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up
-                    </button>
-
-                </form>
-
+                <ul class="nav navbar-nav">
+                    <li><a href="homepage.php">Home</a></li>
+                    <li><a href="explore.php">Explore</a></li>
+                    <li class="active"><a href="fundrequest.php">Start a project</a></li>
+                </ul>
 
                 <?php
-            }
-            ?>
+                    $query0 = $conn->prepare("SELECT Avatar FROM UserProfiles WHERE UID = ?");
+                    $query0->bind_param("s", $loginuser);
+                    $query0->execute();
+                    $query0->bind_result($icon);
+                    $query0->fetch();
+                    $query0->close();
+                ?>
+                <ul class="navbar-text navbar-right dropdown">
+                <!-- User icon -->
+                  <?php 
+                      if ($icon != null){
+                          echo '<img src="' . $icon . '" class = "thumbnail user_icon" >';
+                      }
+                  ?>
+                  <!-- Drop Down -->
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $loginuser ?> <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="timeline.php">My Timeline</a></li>
+                    <li><a href="profile.php?userid=<?php echo $loginuser; ?>">My Profile</a></li>
+                    <li><a href="editProfile.php">Settings</a></li>
+                    <li><a href="logout.php">Log Out</a></li>
+                  </ul>
+                </ul>
 
-
+            </div>
         </div>
     </div>
-</div>
+
+
 
 <div class="fs-form-wrap" id="fs-form-wrap" style="margin-top: 50px;">
     <div class="fs-title">
-        <h1>Start your own dream by post a funding request right now</h1>
+        <h1><span style="margin-left: 200px">Post a funding request right now</span></h1>
     </div>
     <form id="myform" class="fs-form fs-form-full" autocomplete="off" action="fundrequest.php" method="post">
         <ol class="fs-fields">
@@ -240,13 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div><!-- /fs-form-wrap -->
 
 
-<?php
-}
-?>
-
-
-
-
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
@@ -278,11 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } );
         })();
 
-
-
 </script>
-
-
 
 </body>
 </html>

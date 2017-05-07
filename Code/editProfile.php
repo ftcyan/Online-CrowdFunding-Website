@@ -1,16 +1,13 @@
+
 <?php
-	session_start();
 	require 'connection.php';
 	require 'function.php';
-
-$loginuser = $_SESSION['loginuser'];
-
-
-if (!isset($loginuser)) {
-    echo "<script>alert('Please Log in First!')</script>";
-    echo "<script>location.href='homepage.php'</script>";
-}
-
+    session_start();
+    $loginuser = $_SESSION['loginuser'];
+    if (!isset($loginuser)) {
+        echo "<script>alert('Please Log in First!')</script>";
+        echo "<script>location.href='homepage.php'</script>";
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,18 +19,21 @@ if (!isset($loginuser)) {
     <title>Personal Settings</title>
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/stylish-portfolio.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,700" rel="stylesheet" type="text/css">
 
     <style type="text/css">
-        body{
+        body {
             background: url("images/pinkbackground.png") no-repeat center center scroll;
             background-size: cover;
         }
-
+        .navbar-brand{
+            font-size: 1.8em;
+        }
     	.profileform{
-
-
     		position: relative;
-    		margin-top: 100px;
+    		margin-top: 50px;
     		margin-left: auto;
     		margin-right: auto;
     		width: 1100px;
@@ -51,28 +51,19 @@ if (!isset($loginuser)) {
     	.btn-margin{
     		margin-left: 100px;
     	}
-    	.avatar{
-    		overflow: hidden;
-    		width: 100px;
-    		height: 100px;
-    	}
-    	.ava-block{
-    		width: 110px;
-    		height: 110px;
-    	}
-    	.avatar::after {
-    		content: "";
-
-    	}
-        .user_icon{
-            margin: 0 5px;
-            width: 20px;
-            height: 20px;
-            display: inline;
-            padding: 0;
-            border: 1px solid rgba(0,0,0,0);
+        .show {
+            margin-top: 3px;
+            width: 100px;
+            height: 100px;
         }
-
+        .user_icon{
+          margin: 0 5px;
+          width: 20px;
+          height: 20px;
+          display: inline;
+          padding: 0;
+          border: 1px solid rgba(0,0,0,0);
+        }
     </style>
   </head>
   <body>
@@ -88,174 +79,132 @@ if (!isset($loginuser)) {
                 <span class="icon-bar"></span>
 
             </button>
-            <a class="navbar-brand">Spring Board</a>
+            <a class="navbar-brand" href="homepage.php">SpringBoard</a>
 
         	</div>
 
-        	<div class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse">
 
             <ul class ="nav navbar-nav">
-                <li><a href="homepage.php">Home</a></li>
+                <li class="active"><a href="homepage.php">Home</a></li>
                 <li><a href="explore.php">Explore</a></li>
                 <li><a href ="fundrequest.php">Start a project</a></li>
             </ul>
 
-                <?php
-
-                if(isset($loginuser)){
-
-                    //echo "welcome $loginuser ";
-
-                    //echo " <button type=\"button\" class =\"btn btn-danger\" onclick=\"window.location.href='logout.php'\">Bye Bitch</button>";
-
-
-
-                    $query0 = $conn->prepare("SELECT Avatar FROM UserProfiles WHERE UID = ?");
-                    $query0->bind_param("s", $loginuser);
-                    $query0->execute();
-                    $query0->bind_result($icon);
-                    $query0->fetch();
-                    $query0->close();
-
-
-
-
-                    echo"
-
-
-            
-            
-            <div class=\"navbar-text navbar-right dropdown\">
-                    <img src=\"$icon\" class = \"thumbnail user_icon\">
-                    
-                    <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">
-                   $loginuser<span class=\"caret\" ></span></a>
-                    <ul class=\"dropdown-menu\">
-                      <li><a href = \"profile.php?userid=$loginuser\"> My Profile </a></li>
-                      <li><a href = \"editProfile.php\"> Settings</a></li>
-                      <li><a href = \"logout.php\"> Log Out </a></li>
+            <?php
+                $query1 = $conn->prepare("SELECT Avatar FROM UserProfiles WHERE UID = ?");
+                $query1->bind_param("s", $loginuser);
+                $query1->execute();
+                $query1->bind_result($icon);
+                $query1->fetch();
+                $query1->close();
+            ?>
+            <ul class="navbar-text navbar-right dropdown">
+                <!-- User icon -->
+                  <?php 
+                      if ($icon != null){
+                          echo '<img src="' . $icon . '" class = "thumbnail user_icon" >';
+                      }
+                  ?>
+                  <!-- Drop Down -->
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $loginuser ?> <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                      <li><a href="timeline.php">My Timeline</a></li>
+                      <li><a href="profile.php?userid=<?php echo $loginuser; ?>">My Profile</a></li>
+                      <li><a href="editProfile.php">Settings</a></li>
+                      <li><a href="logout.php">Log Out</a></li>
                   </ul>
-                </div> ";
 
-
-
-                }else{
-
-
-                    ?>
-
-                    <form class="navbar-form navbar-right" method="POST" action="loginCheck.php">
-
-                        <div class="form-group">
-
-                            <input type="text" class="form-control" placeholder="Username" name="loginname">
-
-                            <input type="password" class="form-control" placeholder="*****" name="password">
-
-                            <input type="submit" class="btn btn-success"  value="Log In">
-
-                        </div>
-
-                        <button type="button" class ="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up</button>
-
-                    </form>
-
-
-
-                    <?php
-                }
-                ?>
-
-            </div>
+              </ul>
+           </div>
         </div>
     </div>
-    <?php
+    	<?php
 
-    $avatarErr = $phoneErr = $emailErr = $cardErr = $interestsErr = "";
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $firstname = test_input($_POST['firstname']);
-        $lastname = test_input($_POST['lastname']);
-        $gender = test_input($_POST['gender']);
-        $city = test_input($_POST['city']);
-        $state = test_input($_POST['state']);
+    		$avatarErr = $phoneErr = $emailErr = $cardErr = $interestsErr = "";
+    		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    			$firstname = test_input($_POST['firstname']);
+    			$lastname = test_input($_POST['lastname']);
+    			$gender = test_input($_POST['gender']);
+    			$city = test_input($_POST['city']);
+    			$state = test_input($_POST['state']);
 
-        if ($_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
-            //if (isset($_FILES['avatar']['name'])) { //always yes
-            //if (isset($_POST['avatar'])) { //always no
-            //echo "<script>alert('hh')</script>";
-            $icon_size = $_FILES['avatar']['size'];
-            if ($icon_size != 0) {
-                $target_file = "userAvatars/" .date('Ymdhis').basename($_FILES['avatar']['name']);
-                $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
-                //Check if image file is a actual image or fake image
-                $check = getimagesize($_FILES['avatar']['tmp_name']);
-                if ($check === false) {
-                    $avatarErr = "File is not an image.";
+                if ($_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
+    			//if (isset($_FILES['avatar']['name'])) { //always yes
+                //if (isset($_POST['avatar'])) { //always no
+                //echo "<script>alert('hh')</script>";
+    			  $icon_size = $_FILES['avatar']['size'];
+                  if ($icon_size != 0) {
+                    $target_file = "userAvatars/" .date('Ymdhis').basename($_FILES['avatar']['name']);
+                    $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+                    //Check if image file is a actual image or fake image
+                    $check = getimagesize($_FILES['avatar']['tmp_name']);
+                    if ($check === false) {
+                        $avatarErr = "File is not an image.";
+                    }
+                    //check file size
+                    elseif ($icon_size > 500000) {
+                        $avatarErr = "Sorry, your file is too large.";
+                    }
+                    // Allow certain file formats
+                    elseif ($imageFileType !="jpg" && $imageFileType !="png" && $imageFileType !="jpeg") {
+                        $avatarErr = "Sorry, only JPG, JPEG, PNG and GIF files are allowed.";
+                    }
+                    // Check if file already exists
+                    elseif (file_exists($target_file)) {
+                        $avatarErr = "This image already exists.";
+                    }
+                  }
+    			} else {
+                    //echo "<script>alert('no')</script>";
+                    $target_file = $_POST['avalink'];
                 }
-                //check file size
-                elseif ($icon_size > 500000) {
-                    $avatarErr = "Sorry, your file is too large.";
-                }
-                // Allow certain file formats
-                elseif ($imageFileType !="jpg" && $imageFileType !="png" && $imageFileType !="jpeg") {
-                    $avatarErr = "Sorry, only JPG, JPEG, PNG and GIF files are allowed.";
-                }
-                // Check if file already exists
-                elseif (file_exists($target_file)) {
-                    $avatarErr = "This image already exists.";
-                }
-            }
-        } else {
-            //echo "<script>alert('no')</script>";
-            $target_file = $_POST['avalink'];
-        }
 
-        $phone = test_input($_POST['phone']);
-        if (!empty($_POST['phone']) && preg_match("/[^0-9]/", $phone)) {
-            $phoneErr = "phone number is Invalid!";
-        }
-        $email = test_input($_POST['email']);
-        if (!empty($_POST['email']) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $emailErr = "email is Invalid!";
-        }
+    			$phone = test_input($_POST['phone']);
+    			if (!empty($_POST['phone']) && preg_match("/[^0-9]/", $phone)) {
+    				$phoneErr = "phone number is Invalid!";
+    			}
+    			$email = test_input($_POST['email']);
+    			if (!empty($_POST['email']) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      				$emailErr = "email is Invalid!";
+    			}
+    			
+    			if (!empty($_POST['card'])){
+    				$card = test_input($_POST['card']);
+    				if (strlen($card) != 16 || preg_match("/[^0-9]/", $card)) {
+    					$cardErr = "creditcard is Invalid!";
+    				}
+    			}
+    			$interests = test_input($_POST['interests']);
+    			if (strlen($interests) > 140) {
+    				$interestsErr = "Your interests statement are over character limit.";
+    			}
+    			//update to database
+    			if ($avatarErr == "" && $phoneErr == "" && $emailErr == "" && $cardErr == "" && $interestsErr == "") {
 
-        if (!empty($_POST['card'])){
-            $card = test_input($_POST['card']);
-            if (strlen($card) != 16 || preg_match("/[^0-9]/", $card)) {
-                $cardErr = "creditcard is Invalid!";
-            }
-        }
-        $interests = test_input($_POST['interests']);
-        if (strlen($interests) > 140) {
-            $interestsErr = "Your interests statement are over character limit.";
-        }
-        //update to database
-        if ($avatarErr == "" && $phoneErr == "" && $emailErr == "" && $cardErr == "" && $interestsErr == "") {
+    				move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file);
+    				$updateProf = $conn->prepare("UPDATE UserProfiles SET FirstName = ?, LastName = ?, Avatar = ?, Gender = ?, City = ?, State = ?, Cellphone = ?, EmailAddress = ?, CreditCardNumber = ?, Interests = ? WHERE UID = ?");
+    				$updateProf->bind_param("sssssssssss", $firstname, $lastname, $target_file, $gender, $city, $state, $phone, $email, $card, $interests, $loginuser);
+    				$updateProf->execute();
+    				$updateProf->close();
+    			}
 
+    		}//end if post
+    		$user = array("username" => "", "firstname" => "", "lastname" => "", "avatar" => "", "gender" => "", "city" => "", "state" => "", "phone" => "", "email" => "", "card" => "", "interests" => "");
 
-            //delete old one?
-            move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file);
-            $updateProf = $conn->prepare("UPDATE UserProfiles SET FirstName = ?, LastName = ?, Avatar = ?, Gender = ?, City = ?, State = ?, Cellphone = ?, EmailAddress = ?, CreditCardNumber = ?, Interests = ? WHERE UID = ?");
-            $updateProf->bind_param("sssssssssss", $firstname, $lastname, $target_file, $gender, $city, $state, $phone, $email, $card, $interests, $loginuser);
-            $updateProf->execute();
-            $updateProf->close();
-        }
+    		$query1 = $conn->prepare("SELECT * FROM UserProfiles WHERE UID = '$loginuser'");
+    		$query1->execute();
+    		$query1->bind_result($user['username'], $user['firstname'], $user['lastname'], $user['avatar'], $user['gender'], $user['city'], $user['state'], $user['phone'], $user['email'], $user['card'], $user['interests']);
+    		$query1->fetch();
 
-    }//end if post
-    $user = array("username" => "", "firstname" => "", "lastname" => "", "avatar" => "", "gender" => "", "city" => "", "state" => "", "phone" => "", "email" => "", "card" => "", "interests" => "");
+    		$query1->close();
 
-    $query1 = $conn->prepare("SELECT * FROM UserProfiles WHERE UID = '$loginuser'");
-    $query1->execute();
-    $query1->bind_result($user['username'], $user['firstname'], $user['lastname'], $user['avatar'], $user['gender'], $user['city'], $user['state'], $user['phone'], $user['email'], $user['card'], $user['interests']);
-    $query1->fetch();
-
-    $query1->close();
-
-    ?>
+    	?>
+	
     <div class="profileform">
     <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" enctype="multipart/form-data">
     	<div class="row">
-    	<h1 style="text-align: center;">Update Your Profile :)</h1>
+    	<h1 style="text-align: center; margin-top: 100px">Please complete your profile!</h1>
     	</div>
     	<hr>
     	<div class="row">
@@ -263,15 +212,14 @@ if (!isset($loginuser)) {
     		<div class="form-group form-margin">
     			<label for="profileInputUsername">UserName</label>
     			<input type="text" class="form-control" id="profileInputUsername" aria-describedby="usernameHelp" name="username" value=<?php echo $user['username'];?> disabled>
-
+			    <small id="usernameHelp" class="form-text text-muted">If you want to change username, please click <a href="#Accounts">here</a>.</small>
 			</div>
-
-            <div class="form-group form-margin">
-                <label for="profileInputAvatar">Profile Photo</label><span class="error form-margin"><strong style="color: red;"><?php echo $avatarErr;?></strong></span>
-                <input type="file" name="avatar" id="profileInputAvatar">
+			<div class="form-group form-margin">
+    			<label for="profileInputAvatar">Profile Photo</label><span class="error form-margin"><strong style="color: red;"><?php echo $avatarErr;?></strong></span>
+    			<input type="file" name="avatar" id="profileInputAvatar">
                 <input type="hidden" name="avalink" value="<?php echo $user['avatar'];?>">
-                <img src="<?php echo $user['avatar']; ?>" onerror="this.src='images/defaulticon.jpg';" class="avatar">
-            </div>
+                <img class="show" src="<?php echo $user['avatar']; ?>" onerror="this.src='images/defaulticon.jpg';" class="avatar">
+			</div>
 
     		<div class="form-group form-margin" style="clear: left;">
 				<label for="profileInputPhone">Cellphone</label><span class="error form-margin"><strong style="color: red;"><?php echo $phoneErr;?></strong></span>
@@ -378,12 +326,10 @@ if (!isset($loginuser)) {
  		</div>
 
  		<hr>
- 		<div class="row">
-            <div class="col-md-12 col-md-offset-4">
+ 		<div class="row" style="margin-left: 400px;">
     		<input type="submit" class="btn btn-success btn-margin btn-lg" name="commit" value="Save">
     		<a class="btn" href="profile.php?userid=<?php echo $loginuser;?>">View profile</a>
  		</div>
-        </div>
     	</form>
     </div>
     <?php

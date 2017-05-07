@@ -11,12 +11,11 @@ session_start();
 require 'connection.php';
 require 'function.php';
 
-
 $loginuser = $_SESSION['loginuser'];
-
 $clicktag = $_GET["clicktag"];
 
-
+setcookie("taguser",$loginuser,time()+60*60*24*30);
+setcookie("clctag",$_GET["clicktag"],time()+60*60*24*30);
 
 ?>
 
@@ -28,7 +27,6 @@ $clicktag = $_GET["clicktag"];
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-
     <title>Tag Results</title>
 
     <!-- Bootstrap -->
@@ -38,29 +36,16 @@ $clicktag = $_GET["clicktag"];
     <link href="css/stylish-portfolio.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
-    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
-
-
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,700" rel="stylesheet" type="text/css">
 
 
     <style>
-
         .title{
             color: #FFFFFF;
         }
 
         .navbar-brand{
             font-size: 1.8em;
-        }
-
-
-        #topRow h1 {
-            font-size: 300%;
-
         }
 
         .center{
@@ -71,16 +56,14 @@ $clicktag = $_GET["clicktag"];
             margin-top: 100px;
             font-size: 300%;
         }
-
-
-
-
-
-
-
-
-
-
+        .user_icon{
+          margin: 0 5px;
+          width: 20px;
+          height: 20px;
+          display: inline;
+          padding: 0;
+          border: 1px solid rgba(0,0,0,0);
+      }
 
     </style>
 
@@ -99,7 +82,7 @@ $clicktag = $_GET["clicktag"];
                 <span class="icon-bar"></span>
 
             </button>
-            <a class="navbar-brand">Spring Board</a>
+            <a class="navbar-brand" href="homepage.php">SpringBoard</a>
 
         </div>
 
@@ -113,58 +96,50 @@ $clicktag = $_GET["clicktag"];
 
             <?php
 
-            if(isset($loginuser)){
-
-                //echo "welcome $loginuser ";
-
-                //echo " <button type=\"button\" class =\"btn btn-danger\" onclick=\"window.location.href='logout.php'\">Bye Bitch</button>";
-
-                echo"
-
-
-            
-            
-            <div class=\"navbar-text navbar-right dropdown\">
-                    <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">
-                   $loginuser<span class=\"caret\" ></span></a>
-                    <ul class=\"dropdown-menu\">
-                      <li><a href = \"profile.php?userid=$loginuser\"> My Profile </a></li>
-                      <li><a href = \"editProfile.php\"> Settings</a></li>
-                      <li><a href = \"logout.php\"> Log Out </a></li>
-                  </ul>
-                </div> ";
-
-
-
-            }else{
-
-
+            if(isset($loginuser)) {
+                $query0 = $conn->prepare("SELECT Avatar FROM UserProfiles WHERE UID = ?");
+                    $query0->bind_param("s", $loginuser);
+                    $query0->execute();
+                    $query0->bind_result($icon);
+                    $query0->fetch();
+                    $query0->close();
                 ?>
 
+              <ul class="navbar-text navbar-right dropdown">
+                  <!-- User icon -->
+                  <?php 
+                      if ($icon != null){
+                          echo '<img src="' . $icon . '" class = "thumbnail user_icon" >';
+                      }
+                  ?>
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $loginuser ?> <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                      <li><a href="timeline.php">My Timeline</a></li>
+                      <li><a href="profile.php?userid=<?php echo $loginuser; ?>">My Profile</a></li>
+                      <li><a href="editProfile.php">Settings</a></li>
+                      <li><a href="logout.php">Log Out</a></li>
+                  </ul>
+
+              </ul>
+            <?php
+                } else {
+            ?>
                 <form class="navbar-form navbar-right" method="POST" action="loginCheck.php">
 
-                    <div class="form-group">
+                <div class="form-group">
 
-                        <input type="text" class="form-control" placeholder="Username" name="loginname">
+                    <input type="text" class="form-control" placeholder="Username" name="loginname">
+                    <input type="password" class="form-control" placeholder="*****" name="password">
+                    <input type="submit" class="btn btn-success"  value="Log In">
+                </div>
 
-                        <input type="password" class="form-control" placeholder="*****" name="password">
-
-                        <input type="submit" class="btn btn-success"  value="Log In">
-
-                    </div>
-
-                    <button type="button" class ="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up</button>
+                <button type="button" class ="btn btn-danger" onclick="window.location.href='signup.php'">Sign Up</button>
 
                 </form>
 
-
-
-                <?php
-            }
+            <?php
+                }
             ?>
-
-
-
         </div>
     </div>
 </div>
@@ -209,9 +184,6 @@ $clicktag = $_GET["clicktag"];
                     </tbody>
 
                 </table>
-
-
-
             </div>
         </div>
         <br/>
