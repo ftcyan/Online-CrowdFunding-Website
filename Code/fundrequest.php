@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $requestdscp = test_input($_POST['q2']);
     $requestminfund = $_POST['q3'];
     $requestmaxfund = $_POST['q4'];
-    $requestfundendtime = $_POST['q5'];
-    $requesttargettime = $_POST['q6'];
+    $requestfundendtime = $_POST['q5'] ." 12:00:00";
+    $requesttargettime = $_POST['q6'] ." 12:00:00";
 
 
 
@@ -75,11 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Start a project</title>
 
 
-    <link rel="stylesheet" type="text/css" href="css/normalize.css"/>
+    <!--<link rel="stylesheet" type="text/css" href="css/normalize.css"/>-->
     <link rel="stylesheet" type="text/css" href="css/demo.css"/>
     <link rel="stylesheet" type="text/css" href="css/component.css"/>
-    <link rel="stylesheet" type="text/css" href="css/cs-select.css"/>
-    <link rel="stylesheet" type="text/css" href="css/cs-skin-boxes.css"/>
+   <!-- <link rel="stylesheet" type="text/css" href="css/cs-select.css"/>
+    <link rel="stylesheet" type="text/css" href="css/cs-skin-boxes.css"/>-->
 
     <script src="js/modernizr.custom.js"></script>
     <!-- Bootstrap -->
@@ -188,12 +188,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <li>
                 <label class="fs-field-label fs-anim-upper" for="q5">When would your funding end?</label>
-                <input class="fs-anim-lower" id="q5" name="q5" type="text" placeholder="Format:2017-01-01 13:00:00" required/>
+                <input class="fs-anim-lower" id="q5" name="q5" type="date" required/>
             </li>
 
             <li>
                 <label class="fs-field-label fs-anim-upper" for="q6">When would your project be completed idealy?</label>
-                <input class="fs-anim-lower" id="q6" name="q6" type="text" placeholder="Format:2017-01-01 13:00:00" required/>
+                <input class="fs-anim-lower" id="q6" name="q6" type="date" required/>
             </li>
 
 
@@ -205,6 +205,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
 </div><!-- /fs-form-wrap -->
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 col-lg-offset-1 text-center">
+
+                    <h4 class="text-muted">Copyright &copy; SpringBoard</a></h4>
+                </div>
+            </div>
+        </div>
+
+    </footer>
 
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -237,6 +251,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             } );
         })();
+
+
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+        var yyyy = today.getFullYear();
+        if(dd<10){
+            dd='0'+dd
+        }
+        if(mm<10){
+            mm='0'+mm
+        }
+
+        today = yyyy+'-'+mm+'-'+dd;
+        document.getElementById("q5").setAttribute("min", today);
+        document.getElementById("q6").setAttribute("min", today);
+
+
 
 </script>
 

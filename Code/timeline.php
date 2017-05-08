@@ -23,6 +23,13 @@
       .navbar-brand {
         font-size: 1.8em;
       }
+      /*.link {
+        color: #2674b7;
+      }
+      .link:hover {
+        color: #23527c;
+        text-decoration: none;
+      }*/
       .user_icon{
           margin: 0 5px;
           width: 20px;
@@ -89,51 +96,38 @@
 
   <header class="site-header">
     <div class="wrapper">
-      <h1 class="site-header__title">See What's Happening</h1>
+      <h1 class="site-header__title" style="margin-top: 100px;">See What's Happening</h1>
     </div>
   </header>
 
   <?php
 
-    $query0 = $conn->prepare("SELECT UID, ProjName, HappenTime, ActiType FROM Following natural join Activities WHERE FollowerID = '$loginuser' ORDER BY HappenTime DESC");
+    $query0 = $conn->prepare("SELECT UID, ProjName, HappenTime, ActiContent, ActiType FROM Following natural join Activities WHERE FollowerID = '$loginuser' ORDER BY HappenTime DESC");
     $query0->execute();
-    $query0->bind_result($id, $proj, $happen, $type);
+    $query0->bind_result($id, $proj, $happen, $detail, $type);
     $i = 0;
-    $detail = "";
     ?>
 
   <div class="timeline">
     <div class="wrapper">
     <?php
     while ($query0->fetch()) {
-    //while ($i < 8) {
-      $detial = "xixi";
       ?>
       <div class="timeline__item timeline__item--<?php echo $i;?>">
         <div class="timeline__item__station"></div>
         <div class="timeline__item__content">
           <h2 class="timeline__item__content__date"><?php echo date("M.d H:i", strtotime($happen));?></h2>
-          <p class="timeline__item__content__description"><strong><em><?php echo $id;?></em></strong>
+
+          <p class="timeline__item__content__description">
+            <strong><em><a href="profile.php?userid=<?php echo $id;?>">
+              <?php echo $id;?></a></em></strong>
           <?php if ($type == "post") { ?>
           posted a new project: 
           <?php } elseif ($type == "like") { ?>
           liked project:
-          <?php } elseif ($type == "review") { 
-            /*$subquery0 = $conn->prepare("SELECT UserReview FROM Reviews WHERE UID = $id AND ProjID = $proj");
-            $subquery0->execute();
-            $subquery0->bind_result($detail);
-            $subquery0->close();*/
-            ?>
+          <?php } elseif ($type == "review") { ?>
           reviewd a completed project:
-          <?php } elseif ($type == "comment") { 
-            /*$subquery1 = $conn->prepare("SELECT UserComment FROM Comments WHERE UID = $id AND ProjID = $proj AND CommentTime = $happen");
-            $subquery1->execute();
-            $subquery1->bind_result($detail);
-
-                $subquery1->fetch();*/
-
-            
-            ?>
+          <?php } elseif ($type == "comment") { ?>
           posted a comment on:
           <?php } elseif ($type == "update") { ?>
           had some new updates for 
@@ -144,21 +138,14 @@
           <?php } elseif ($type == "pledge") { ?>
           pledged on the project:
           <?php } ?>
-          <strong><em><?php echo $proj;?></em></strong></p>
+          <strong><em><a href="project.php?projectname=<?php echo $proj;?>">
+              <?php echo $proj;?></a></em></strong></p>
           <div class="timeline__item__content__detail">
             <?php
-              /*if ($type == "comment" || $type == "review") {
-                $subquery1 = $conn->prepare("SELECT UserComment FROM Comments WHERE UID = $id AND ProjID = $proj AND CommentTime = $happen");
-                $subquery1->execute();
-            $subquery1->bind_result($detail);
-
-                $subquery1->fetch();
-            //$subquery1->close();
-                echo $detail;
-                $subquery1->close();
-              } */
+              if ($type == "post" || $type == "comment" || $type == "review" || $type == "ongoing" || $type == "complete") {
+                  echo '"' .$detail .'"';
+              }
             ?>
-            "haha hahha post lol lol lol lol hei hei hei
           </div>
         </div>
       </div>

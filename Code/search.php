@@ -155,12 +155,12 @@ setcookie("keyword",$_GET["searchkeyword"],time()+60*60*24*30);
         <?php
 
         $query0 = $conn->prepare(
-            "SELECT ProjID, ProjName, PostTime
+            "SELECT ProjName, PostTime, Status
                     FROM Projects 
                     WHERE ProjName like '%$keyword%' or Description like '%$keyword%'
                     Order by PostTime desc");
         $query0 -> execute();
-        $query0 -> bind_result($projid,$projname,$posttime);
+        $query0 -> bind_result($projname,$posttime,$status);
 
 
         ?>
@@ -171,13 +171,13 @@ setcookie("keyword",$_GET["searchkeyword"],time()+60*60*24*30);
                 <table class="table  table-hover" style="z-index = +1" >
                     <thead class="thead-inverse">
                     <tr>
-                        <td> Project ID </td><td> Project Name </td><td> Post Time </td></tr>
+                        <td> Project Name </td><td> Post Time </td><td> Status </td></tr>
                     </thead>
                     <tbody>
                     <?php
                     while($query0 -> fetch()){
                         echo "<tr>
-                              <td><a href ='project.php?projectname=$projname'>$projid</a></td><td> $projname </td><td> $posttime </td>";
+                              <td><a href ='project.php?projectname=$projname'>$projname</a></td><td> $posttime </td><td> $status </td>";
                         echo "</tr>\n";
                     }
                     $query0 -> close();
@@ -252,6 +252,24 @@ setcookie("keyword",$_GET["searchkeyword"],time()+60*60*24*30);
         </div>
     </div>
 </aside>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-lg-offset-1 text-center">
+                <h4><strong>Powered by</strong>
+                </h4>
+                <p> <span><a href="https://www.linkedin.com/in/renqingyu/" style="color: black;">Renqing Yu</a></span></p>
+                <p> <span><a href="https://www.linkedin.com/in/xiangyu-zhao/" style="color: black;">Xiangyu Zhao</a></span></p>
+                <hr class="small">
+                <p class="text-muted">Copyright &copy; SpringBoard</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
 
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

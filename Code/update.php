@@ -158,6 +158,38 @@ $projname = $_GET["projectname"];
 
     <div class="container blockmargin">
         <div class="col-md-12 text-center">
+                <br><br>
+
+            <div class = "row">
+                <form method="post" action="">
+
+                <button name="cplt" type="submit" class="btn btn-success" >I have completed it!</button>
+
+
+                <?php
+
+                if (isset($_POST['cplt'])) {
+
+                    $cplttime = date('Y-m-d H:i:s');
+
+                    $cpltquery = $conn->prepare("UPDATE Projects SET Status='Completed', CompleteTime='$cplttime' WHERE ProjID='$projectid' ");
+                    $cpltquery -> execute();
+                    $cpltquery ->close();
+
+
+
+                    echo "<script>alert('Congratulations!')</script>";
+
+                    echo "<script>location.href='project.php?projectname=$projname'</script>";
+
+                }
+
+                ?>
+                </form>
+            </div>
+            <br>
+            <hr>
+
 
             <form method="post" action="" enctype="multipart/form-data">
                 <div class="form-group form-margin">
@@ -168,12 +200,9 @@ $projname = $_GET["projectname"];
                         <br/><br/>
 
 
-
-
                         <input id="updateupload" type="file" style="display:none" name="update">
                         <div class="input-append">
-                            <input id="photoCover" class="input-large" type="text" style="height:30px; border: 2px solid;
-            color: black;" >
+                            <input id="photoCover" class="input-large" type="text" style="height:30px; border: 2px solid;color: black;">
                             <a class="btn" onclick="$('input[id=updateupload]').click();">Browse</a>
                         </div>
 
@@ -184,7 +213,7 @@ $projname = $_GET["projectname"];
                     </div>
                     <br/>
 
-                    <button name="upt" type="submit" class="btn btn-success" >Update it</button>
+                    <button name="upt" type="submit" class="btn btn-success" >Update</button>
                 </div>
             </form>
 

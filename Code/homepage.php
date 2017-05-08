@@ -400,8 +400,8 @@
                 <div class="col-lg-10 col-lg-offset-1 text-center">
                     <h4><strong>Powered by</strong>
                     </h4>
-                    <p>Renqing Yu
-                        <br>Xiangyu Zhao</p>
+                    <p> <span><a href="https://www.linkedin.com/in/renqingyu/" style="color: black;">Renqing Yu</a></span></p>
+                    <p> <span><a href="https://www.linkedin.com/in/xiangyu-zhao/" style="color: black;">Xiangyu Zhao</a></span></p>
                 <hr class="small">
                     <p class="text-muted">Copyright &copy; SpringBoard</a></p>
                 </div>

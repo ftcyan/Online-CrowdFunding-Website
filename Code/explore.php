@@ -300,6 +300,26 @@ $loginuser = $_SESSION['loginuser'];
 
 
 
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-lg-offset-1 text-center">
+                <h4><strong>Powered by</strong>
+                </h4>
+                <p> <span><a href="https://www.linkedin.com/in/renqingyu/" style="color: black;">Renqing Yu</a></span></p>
+                <p> <span><a href="https://www.linkedin.com/in/xiangyu-zhao/" style="color: black;">Xiangyu Zhao</a></span></p>
+                <hr class="small">
+                <p class="text-muted">Copyright &copy; SpringBoard</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->

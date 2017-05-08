@@ -49,7 +49,7 @@
     	}
 
     	.btn-margin{
-    		margin-left: 100px;
+    		margin-left: 500px;
     	}
         .show {
             margin-top: 3px;
@@ -212,7 +212,7 @@
     		<div class="form-group form-margin">
     			<label for="profileInputUsername">UserName</label>
     			<input type="text" class="form-control" id="profileInputUsername" aria-describedby="usernameHelp" name="username" value=<?php echo $user['username'];?> disabled>
-			    <small id="usernameHelp" class="form-text text-muted">If you want to change username, please click <a href="#Accounts">here</a>.</small>
+			    
 			</div>
 			<div class="form-group form-margin">
     			<label for="profileInputAvatar">Profile Photo</label><span class="error form-margin"><strong style="color: red;"><?php echo $avatarErr;?></strong></span>
@@ -326,7 +326,7 @@
  		</div>
 
  		<hr>
- 		<div class="row" style="margin-left: 400px;">
+ 		<div class="row" >
     		<input type="submit" class="btn btn-success btn-margin btn-lg" name="commit" value="Save">
     		<a class="btn" href="profile.php?userid=<?php echo $loginuser;?>">View profile</a>
  		</div>
