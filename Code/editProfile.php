@@ -8,6 +8,81 @@
         echo "<script>alert('Please Log in First!')</script>";
         echo "<script>location.href='homepage.php'</script>";
     }
+    $avatarErr = $phoneErr = $emailErr = $cardErr = $interestsErr = "";
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $firstname = test_input($_POST['firstname']);
+        $lastname = test_input($_POST['lastname']);
+        $gender = test_input($_POST['gender']);
+        $city = test_input($_POST['city']);
+        $state = test_input($_POST['state']);
+
+        if ($_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $icon_size = $_FILES['avatar']['size'];
+            if ($icon_size != 0) {
+            $target_file = "userAvatars/" .date('Ymdhis').basename($_FILES['avatar']['name']);
+            $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+            //Check if image file is a actual image or fake image
+            $check = getimagesize($_FILES['avatar']['tmp_name']);
+                if ($check === false) {
+                    $avatarErr = "File is not an image.";
+                }
+                //check file size
+                elseif ($icon_size > 500000) {
+                    $avatarErr = "Sorry, your file is too large.";
+                }
+                // Allow certain file formats
+                elseif ($imageFileType !="jpg" && $imageFileType !="png" && $imageFileType !="jpeg") {
+                    $avatarErr = "Sorry, only JPG, JPEG, PNG and GIF files are allowed.";
+                }
+                // Check if file already exists
+                elseif (file_exists($target_file)) {
+                    $avatarErr = "This image already exists.";
+                }
+            }
+        } else {
+            //echo "<script>alert('no')</script>";
+            $target_file = $_POST['avalink'];
+        }
+
+        $phone = test_input($_POST['phone']);
+        if (!empty($_POST['phone']) && preg_match("/[^0-9]/", $phone)) {
+            $phoneErr = "phone number is Invalid!";
+        }
+        $email = test_input($_POST['email']);
+        if (!empty($_POST['email']) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $emailErr = "email is Invalid!";
+        }
+                
+        if (!empty($_POST['card'])){
+            $card = test_input($_POST['card']);
+            if (strlen($card) != 16 || preg_match("/[^0-9]/", $card)) {
+                $cardErr = "creditcard is Invalid!";
+            }
+        }
+        $interests = test_input($_POST['interests']);
+        if (strlen($interests) > 140) {
+            $interestsErr = "Your interests statement are over character limit.";
+        }
+        //update to database
+        if ($avatarErr == "" && $phoneErr == "" && $emailErr == "" && $cardErr == "" && $interestsErr == "") {
+
+            move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file);
+            $updateProf = $conn->prepare("UPDATE UserProfiles SET FirstName = ?, LastName = ?, Avatar = ?, Gender = ?, City = ?, State = ?, Cellphone = ?, EmailAddress = ?, CreditCardNumber = ?, Interests = ? WHERE UID = ?");
+            $updateProf->bind_param("sssssssssss", $firstname, $lastname, $target_file, $gender, $city, $state, $phone, $email, $card, $interests, $loginuser);
+            $updateProf->execute();
+            $updateProf->close();
+        }
+
+    }//end if post
+    $user = array("username" => "", "firstname" => "", "lastname" => "", "avatar" => "", "gender" => "", "city" => "", "state" => "", "phone" => "", "email" => "", "card" => "", "interests" => "");
+
+    $query0 = $conn->prepare("SELECT * FROM UserProfiles WHERE UID = '$loginuser'");
+    $query0->execute();
+    $query0->bind_result($user['username'], $user['firstname'], $user['lastname'], $user['avatar'], $user['gender'], $user['city'], $user['state'], $user['phone'], $user['email'], $user['card'], $user['interests']);
+    $query0->fetch();
+
+    $query0->close();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +108,7 @@
         }
     	.profileform{
     		position: relative;
-    		margin-top: 50px;
+    		margin-top: 100px;
     		margin-left: auto;
     		margin-right: auto;
     		width: 1100px;
@@ -49,10 +124,10 @@
     	}
 
     	.btn-margin{
-    		margin-left: 500px;
+    		margin-left: 100px;
     	}
         .show {
-            margin-top: 3px;
+            margin-top: 20px;
             width: 100px;
             height: 100px;
         }
@@ -119,92 +194,11 @@
            </div>
         </div>
     </div>
-    	<?php
-
-    		$avatarErr = $phoneErr = $emailErr = $cardErr = $interestsErr = "";
-    		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    			$firstname = test_input($_POST['firstname']);
-    			$lastname = test_input($_POST['lastname']);
-    			$gender = test_input($_POST['gender']);
-    			$city = test_input($_POST['city']);
-    			$state = test_input($_POST['state']);
-
-                if ($_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
-    			//if (isset($_FILES['avatar']['name'])) { //always yes
-                //if (isset($_POST['avatar'])) { //always no
-                //echo "<script>alert('hh')</script>";
-    			  $icon_size = $_FILES['avatar']['size'];
-                  if ($icon_size != 0) {
-                    $target_file = "userAvatars/" .date('Ymdhis').basename($_FILES['avatar']['name']);
-                    $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
-                    //Check if image file is a actual image or fake image
-                    $check = getimagesize($_FILES['avatar']['tmp_name']);
-                    if ($check === false) {
-                        $avatarErr = "File is not an image.";
-                    }
-                    //check file size
-                    elseif ($icon_size > 500000) {
-                        $avatarErr = "Sorry, your file is too large.";
-                    }
-                    // Allow certain file formats
-                    elseif ($imageFileType !="jpg" && $imageFileType !="png" && $imageFileType !="jpeg") {
-                        $avatarErr = "Sorry, only JPG, JPEG, PNG and GIF files are allowed.";
-                    }
-                    // Check if file already exists
-                    elseif (file_exists($target_file)) {
-                        $avatarErr = "This image already exists.";
-                    }
-                  }
-    			} else {
-                    //echo "<script>alert('no')</script>";
-                    $target_file = $_POST['avalink'];
-                }
-
-    			$phone = test_input($_POST['phone']);
-    			if (!empty($_POST['phone']) && preg_match("/[^0-9]/", $phone)) {
-    				$phoneErr = "phone number is Invalid!";
-    			}
-    			$email = test_input($_POST['email']);
-    			if (!empty($_POST['email']) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-      				$emailErr = "email is Invalid!";
-    			}
-    			
-    			if (!empty($_POST['card'])){
-    				$card = test_input($_POST['card']);
-    				if (strlen($card) != 16 || preg_match("/[^0-9]/", $card)) {
-    					$cardErr = "creditcard is Invalid!";
-    				}
-    			}
-    			$interests = test_input($_POST['interests']);
-    			if (strlen($interests) > 140) {
-    				$interestsErr = "Your interests statement are over character limit.";
-    			}
-    			//update to database
-    			if ($avatarErr == "" && $phoneErr == "" && $emailErr == "" && $cardErr == "" && $interestsErr == "") {
-
-    				move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file);
-    				$updateProf = $conn->prepare("UPDATE UserProfiles SET FirstName = ?, LastName = ?, Avatar = ?, Gender = ?, City = ?, State = ?, Cellphone = ?, EmailAddress = ?, CreditCardNumber = ?, Interests = ? WHERE UID = ?");
-    				$updateProf->bind_param("sssssssssss", $firstname, $lastname, $target_file, $gender, $city, $state, $phone, $email, $card, $interests, $loginuser);
-    				$updateProf->execute();
-    				$updateProf->close();
-    			}
-
-    		}//end if post
-    		$user = array("username" => "", "firstname" => "", "lastname" => "", "avatar" => "", "gender" => "", "city" => "", "state" => "", "phone" => "", "email" => "", "card" => "", "interests" => "");
-
-    		$query1 = $conn->prepare("SELECT * FROM UserProfiles WHERE UID = '$loginuser'");
-    		$query1->execute();
-    		$query1->bind_result($user['username'], $user['firstname'], $user['lastname'], $user['avatar'], $user['gender'], $user['city'], $user['state'], $user['phone'], $user['email'], $user['card'], $user['interests']);
-    		$query1->fetch();
-
-    		$query1->close();
-
-    	?>
 	
     <div class="profileform">
     <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" enctype="multipart/form-data">
     	<div class="row">
-    	<h1 style="text-align: center; margin-top: 100px">Please complete your profile!</h1>
+    	<h1 style="text-align: center;">Please complete your profile!</h1>
     	</div>
     	<hr>
     	<div class="row">
@@ -212,7 +206,6 @@
     		<div class="form-group form-margin">
     			<label for="profileInputUsername">UserName</label>
     			<input type="text" class="form-control" id="profileInputUsername" aria-describedby="usernameHelp" name="username" value=<?php echo $user['username'];?> disabled>
-			    
 			</div>
 			<div class="form-group form-margin">
     			<label for="profileInputAvatar">Profile Photo</label><span class="error form-margin"><strong style="color: red;"><?php echo $avatarErr;?></strong></span>
@@ -326,8 +319,8 @@
  		</div>
 
  		<hr>
- 		<div class="row" >
-    		<input type="submit" class="btn btn-success btn-margin btn-lg" name="commit" value="Save">
+ 		<div class="row" style="text-align: center;">
+    		<input type="submit" class="btn btn-success btn-lg" name="commit" value="Save">
     		<a class="btn" href="profile.php?userid=<?php echo $loginuser;?>">View profile</a>
  		</div>
     	</form>

@@ -434,6 +434,8 @@ require 'function.php';
 
     <?php
 
+    if(isset($loginuser)){
+
     if($status == 'Funding') {
         $query7 = $conn->prepare("SELECT UID FROM Pledges WHERE ProjID='$projid' AND UID = '$loginuser'");
         $query7->execute();
@@ -464,6 +466,8 @@ require 'function.php';
     }else if($status == 'Failed'){
 
         echo "<h3><div style='text-align: center; color: #5CB85C'>$ownerid didn't recieve enough fund...<br>Your comment will be a great comfort :)</div></h3> <br/><br/>";
+
+    }
 
     }
 

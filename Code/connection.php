@@ -3,7 +3,8 @@
 	$servername = 'localhost';
 	$serverusername = 'root';
 	$serverpassword = 'root';
-	$dbname = 'Spring Board';
+	//$dbname = 'Spring Board';
+    $dbname = 'SpringBoardFunding';
 	date_default_timezone_set('America/New_York');
 	//Create Connection
 	$conn = new mysqli($servername, $serverusername, $serverpassword, $dbname);
