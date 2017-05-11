@@ -216,7 +216,7 @@ $query0->close();
                         <br/><br/>
 
 
-                        <input id="sampleupload" type="file" style="display:none" name="sample">
+                        <input id="sampleupload" type="file" style="display:none" name="sample" required="required">
                         <div class="input-append">
                             <input id="photoCover" class="input-large" type="text" style="height:30px; border: 2px solid;
             color: black;" >
